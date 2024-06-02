@@ -32,12 +32,20 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
         // Send a ping to confirm a successful connection
+        const database = client.db("contestDB");
+        const userCollection = database.collection("users");
 
         app.post('/jwt', async (req, res) => {
             const user = req.body
             console.log(user);
             const token = await jwt.sign(user, process.env.ACCESS_TOKEN_SECURE, { expiresIn: '1h' });
             res.send({ token })
+        })
+
+        app.post('/users', async (req, res) => {
+            const users = req.body
+            const result = await userCollection.insertOne(users)
+            res.send(result)
         })
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
