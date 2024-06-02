@@ -1,10 +1,19 @@
 const express = require('express')
 const app = express()
+const cors = require('cors')
 const port = process.env.PORT || 5000
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 
-
+app.use(express.json())
+app.use(cors({
+    origin: [
+        "http://localhost:5173",
+        // "https://cardoctor-bd.web.app",
+        // "https://cardoctor-bd.firebaseapp.com",
+    ]
+})
+);
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@cluster0.bls3tyg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -26,7 +35,8 @@ async function run() {
 
         app.post('/jwt', async (req, res) => {
             const user = req.body
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECURE, { expiresIn: '1h' });
+            console.log(user);
+            const token = await jwt.sign(user, process.env.ACCESS_TOKEN_SECURE, { expiresIn: '1h' });
             res.send({ token })
         })
         await client.db("admin").command({ ping: 1 });
