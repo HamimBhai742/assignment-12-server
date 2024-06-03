@@ -34,6 +34,7 @@ async function run() {
         // Send a ping to confirm a successful connection
         const database = client.db("contestDB");
         const userCollection = database.collection("users");
+        const contestCollection = database.collection("contest");
 
         app.post('/jwt', async (req, res) => {
             const user = req.body
@@ -120,6 +121,31 @@ async function run() {
                 },
             };
             const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result)
+        })
+
+        // Contest Api
+
+        app.post('/contest', async (req, res) => {
+            const contestInfo = req.body
+            const result = await contestCollection.insertOne(contestInfo)
+            res.send(result)
+        })
+
+        app.get('/contest', async (req, res) => {
+            const result = await contestCollection.find().toArray()
+            res.send(result)
+        })
+
+        app.patch('/contest/admin/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    status: 'accept'
+                },
+            };
+            const result = await contestCollection.updateOne(query, updateDoc)
             res.send(result)
         })
         await client.db("admin").command({ ping: 1 });
