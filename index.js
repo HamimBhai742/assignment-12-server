@@ -35,6 +35,7 @@ async function run() {
         const database = client.db("contestDB");
         const userCollection = database.collection("users");
         const contestCollection = database.collection("contest");
+        const commentCollection = database.collection("comment");
 
         app.post('/jwt', async (req, res) => {
             const user = req.body
@@ -146,6 +147,21 @@ async function run() {
                 },
             };
             const result = await contestCollection.updateOne(query, updateDoc)
+            res.send(result)
+        })
+
+        // Comment Api
+
+        app.post('/comments', async (req, res) => {
+            const commentInfo = req.body
+            const result = await commentCollection.insertOne(commentInfo)
+            res.send(result)
+        })
+
+        app.get('/comments/:email', async (req, res) => {
+            const email = req.params.email
+            const query = { creatorEmail: email }
+            const result = await commentCollection.find(query).toArray()
             res.send(result)
         })
         await client.db("admin").command({ ping: 1 });
