@@ -15,7 +15,7 @@ app.use(cors({
 })
 );
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@cluster0.bls3tyg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -45,6 +45,68 @@ async function run() {
         app.post('/users', async (req, res) => {
             const users = req.body
             const result = await userCollection.insertOne(users)
+            res.send(result)
+        })
+
+        app.get('/users', async (req, res) => {
+            const result = await userCollection.find().toArray()
+            res.send(result)
+        })
+
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await userCollection.deleteOne(query)
+            res.send(result)
+        })
+
+        app.patch('/users/blocking/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    status: 'Block'
+                },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result)
+        })
+
+        app.patch('/users/unblocking/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    status: 'Active'
+                },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result)
+        })
+
+        app.patch('/users/admin/:id', async (req, res) => {
+            const id = req.params.id
+            console.log(id);
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    role: 'Admin'
+                },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result)
+        })
+
+        app.patch('/users/contest/creator/:id', async (req, res) => {
+            const id = req.params.id
+            console.log(id);
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    role: 'Creator'
+                },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
             res.send(result)
         })
         await client.db("admin").command({ ping: 1 });
