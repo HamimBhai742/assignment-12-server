@@ -138,6 +138,66 @@ async function run() {
             res.send(result)
         })
 
+        // pagination api
+        app.get('/contests', async (req, res) => {
+            console.log(req.query);
+            const page = parseInt(req.query.page)
+            const size = parseInt(req.query.size)
+            console.log(page,size);
+            const result = await contestCollection.find()
+                .skip(page * size)
+                .limit(size)
+                .toArray()
+            res.send(result)
+        })
+
+        app.get('/manage-contest', async (req, res) => {
+            const count = await contestCollection.estimatedDocumentCount()
+            res.send({ count })
+        })
+
+
+        app.patch('/contest/:id', async (req, res) => {
+            const id = req.params.id
+            const count = req.body
+            console.log(count.count);
+            const query = { _id: new ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    participantsCount: count.count
+                },
+            };
+            const result = await contestCollection.updateOne(query, updateDoc)
+            res.send(result)
+
+        })
+
+        app.patch('/my-contest/update/:id', async (req, res) => {
+            const id = req.params.id
+            const data = req.body
+            const query = { _id: new ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    contestName: data.contestName,
+                    contestImg: data.contestImg,
+                    contestDes: data.contestDescription,
+                    taskDetails: data.taskDeatils,
+                    contestTag: data.contestTag,
+                    contestPrice: data.contestPrice,
+                    deadLine: data.deadLine,
+                    prizeMoney: data.prizeMoney
+                },
+            };
+            const result = await contestCollection.updateOne(query, updateDoc)
+            res.send(result)
+        })
+        app.get('/update/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await contestCollection.findOne(query)
+            res.send(result)
+        })
+
         app.patch('/contest/admin/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: new ObjectId(id) }
@@ -147,6 +207,13 @@ async function run() {
                 },
             };
             const result = await contestCollection.updateOne(query, updateDoc)
+            res.send(result)
+        })
+
+        app.delete('/my-contest/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
+            const result = await contestCollection.deleteOne(filter)
             res.send(result)
         })
 
