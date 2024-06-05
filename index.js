@@ -55,6 +55,17 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/manage-users', async (req, res) => {
+            const page = parseInt(req.query.page)
+            const size = parseInt(req.query.size)
+            console.log(page, size);
+            const result = await userCollection.find()
+                .skip(page * size)
+                .limit(size)
+                .toArray()
+            res.send(result)
+        })
+
         app.delete('/users/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: new ObjectId(id) }
@@ -143,8 +154,24 @@ async function run() {
             console.log(req.query);
             const page = parseInt(req.query.page)
             const size = parseInt(req.query.size)
-            console.log(page,size);
+            console.log(page, size);
             const result = await contestCollection.find()
+                .skip(page * size)
+                .limit(size)
+                .toArray()
+            res.send(result)
+        })
+
+        // pagination api
+        app.get('/my-contests/:email', async (req, res) => {
+            console.log(req.query);
+            const email = req.params.email
+            console.log('email fot',email);
+            const filter = { addUserEmail: email }
+            const page = parseInt(req.query.page)
+            const size = parseInt(req.query.size)
+            console.log(page, size);
+            const result = await contestCollection.find(filter)
                 .skip(page * size)
                 .limit(size)
                 .toArray()
