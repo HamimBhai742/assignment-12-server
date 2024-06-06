@@ -1,6 +1,8 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const Stripe = require("stripe")
+const stripe = Stripe('sk_test_51PLV75AjWpOP8HLuNBzU05XcnlbOMrSixIDpYDl8u2FJzehRbQs7uN4gxiWTv3Tkd6FVCOHz9Wd9vGU25n7PRf8T00GjTmlR6X')
 const port = process.env.PORT || 5000
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
@@ -14,7 +16,8 @@ app.use(cors({
     ]
 })
 );
-
+// console.log(stripe);
+console.log(process.env.PAY_API_KEY);
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@cluster0.bls3tyg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -36,6 +39,7 @@ async function run() {
         const userCollection = database.collection("users");
         const contestCollection = database.collection("contest");
         const commentCollection = database.collection("comment");
+        const paymentCollection = database.collection("payment");
 
         app.post('/jwt', async (req, res) => {
             const user = req.body
@@ -166,7 +170,7 @@ async function run() {
         app.get('/my-contests/:email', async (req, res) => {
             console.log(req.query);
             const email = req.params.email
-            console.log('email fot',email);
+            console.log('email fot', email);
             const filter = { addUserEmail: email }
             const page = parseInt(req.query.page)
             const size = parseInt(req.query.size)
@@ -265,6 +269,36 @@ async function run() {
             const result = await commentCollection.find(query).toArray()
             res.send(result)
         })
+
+        // Payment api
+        app.post("/create-payment-intent", async (req, res) => {
+            const { price } = req.body;
+            const amount = parseInt(price * 100)
+            console.log(amount, 'nnnnnnnngggggggggggddddddddddrrrrrr');
+            // console.log(stripe);
+            // Create a PaymentIntent with the order amount and currency
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: "usd",
+                payment_method_types: ["card"]
+            });
+            // console.log(paymentIntent);
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        });
+
+        app.post('/payment', async (req, res) => {
+            const paymentHistory = req.body
+            const result = await paymentCollection.insertOne(paymentHistory)
+            res.send(result)
+        })
+
+        app.get('/payment', async (req, res) => {
+            const result = await paymentCollection.find().toArray()
+            res.send(result)
+        })
+
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
