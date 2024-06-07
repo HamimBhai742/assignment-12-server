@@ -11,7 +11,7 @@ app.use(express.json())
 app.use(cors({
     origin: [
         "http://localhost:5173",
-        // "https://cardoctor-bd.web.app",
+        "https://contest-creation-e8805.web.app",
         // "https://cardoctor-bd.firebaseapp.com",
     ]
 })
@@ -201,6 +201,13 @@ async function run() {
             const result = await contestCollection.updateOne(query, updateDoc)
             res.send(result)
 
+        })
+
+        app.get('/popular/contest', async (req, res) => {
+
+            const query = { status: 'accept' }
+            const result = await contestCollection.find(query).sort({ participantsCount: -1 }).limit(9).toArray()
+            res.send(result)
         })
 
         app.patch('/my-contest/update/:id', async (req, res) => {
