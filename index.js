@@ -40,6 +40,8 @@ async function run() {
         const contestCollection = database.collection("contest");
         const commentCollection = database.collection("comment");
         const paymentCollection = database.collection("payment");
+        const perticipantsCollection = database.collection("perticipants");
+        const winerCollection = database.collection("winer");
 
         app.post('/jwt', async (req, res) => {
             const user = req.body
@@ -303,6 +305,50 @@ async function run() {
 
         app.get('/payment', async (req, res) => {
             const result = await paymentCollection.find().toArray()
+            res.send(result)
+        })
+
+        // Perticipants Api 
+
+        app.post('/submited-contest', async (req, res) => {
+            const submitContest = req.body
+            const result = await perticipantsCollection.insertOne(submitContest)
+            res.send(result)
+        })
+
+        // app.get('/submit-con', async (req, res) => {
+        //     const result = await perticipantsCollection.find()
+        //         .toArray()
+        //     res.send(result)
+        // })
+
+        app.get('/submited-contest', async (req, res) => {
+            const page = parseInt(req.query.page)
+            const size = parseInt(req.query.size)
+            const result = await perticipantsCollection.find()
+                .skip(page * size)
+                .limit(size)
+                .toArray()
+            res.send(result)
+        })
+
+        // Winer Contest
+
+        app.post('/contest-winer', async (req, res) => {
+            const winer = req.body
+            console.log(winer);
+            const id = req.query.id
+            const winerResult = await winerCollection.insertOne(winer)
+            const query = { contestId: id }
+            const perticipantsDeleteResult = await perticipantsCollection.deleteMany(query)
+            res.send({ winerResult, perticipantsDeleteResult })
+        })
+
+
+        app.get('/contest-winer', async (req, res) => {
+            const id = req.params.id
+            console.log(id);
+            const result = await winerCollection.find().toArray()
             res.send(result)
         })
 
