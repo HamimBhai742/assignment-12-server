@@ -50,6 +50,8 @@ async function run() {
             res.send({ token })
         })
 
+        // users api
+
         app.post('/users', async (req, res) => {
             const users = req.body
             const result = await userCollection.insertOne(users)
@@ -59,6 +61,22 @@ async function run() {
         app.get('/users', async (req, res) => {
             const result = await userCollection.find().toArray()
             res.send(result)
+        })
+
+        app.patch('/users/:email', async (req, res) => {
+            const email = req.params.email
+            const filter = { email: email }
+            const data = req.body
+            const updateDoc = {
+                $set: {
+                    name: data.name,
+                    photoUrl: data.photoUrl,
+                    address: data.address
+                },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc)
+            res.send(result)
+
         })
 
         app.get('/manage-users', async (req, res) => {
