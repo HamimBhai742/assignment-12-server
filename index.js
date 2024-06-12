@@ -11,6 +11,7 @@ app.use(express.json())
 app.use(cors({
     origin: [
         "http://localhost:5173",
+        "http://localhost:5174",
         "https://contest-creation-e8805.web.app",
         // "https://cardoctor-bd.firebaseapp.com",
     ]
@@ -153,18 +154,18 @@ async function run() {
             res.send(result)
         })
 
-        // app.patch('/users/:id', async (req, res) => {
-        //     const id = req.params.id
-        //     console.log(id);
-        //     const filter = { _id: new ObjectId(id) };
-        //     const updateDoc = {
-        //         $set: {
-        //             role: 'User'
-        //         },
-        //     };
-        //     const result = await userCollection.updateOne(filter, updateDoc);
-        //     res.send(result)
-        // })
+        app.patch('/users/role/:id', async (req, res) => {
+            const id = req.params.id
+            console.log(id);
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    role: 'User'
+                },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result)
+        })
 
         // Contest Api
 
@@ -230,9 +231,21 @@ async function run() {
         })
 
         app.get('/popular/contest', async (req, res) => {
-
-            const query = { status: 'accept' }
+            const query = {
+                status: 'accept'
+            }
             const result = await contestCollection.find(query).sort({ participantsCount: -1 }).limit(9).toArray()
+            res.send(result)
+        })
+
+        app.get('/populars/contests', async (req, res) => {
+            const filter = req.query
+            const optionsh = {
+                status: 'accept',
+                contestTag: { $regex: filter.search, $options: 'i' }
+            }
+            console.log(optionsh);
+            const result = await contestCollection.find(optionsh).sort({ participantsCount: -1 }).toArray()
             res.send(result)
         })
 
