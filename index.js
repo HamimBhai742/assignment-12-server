@@ -117,8 +117,14 @@ async function run() {
                     status: 'Active'
                 },
             };
-            const result = await userCollection.updateOne(filter, updateDoc);
-            res.send(result)
+            const unResult = await userCollection.updateOne(filter, updateDoc);
+            const updateDoc1 = {
+                $set: {
+                    role: 'User'
+                },
+            };
+            const roleResult = await userCollection.updateOne(filter, updateDoc1);
+            res.send({ unResult, roleResult })
         })
 
         app.patch('/users/admin/:id', async (req, res) => {
@@ -147,18 +153,18 @@ async function run() {
             res.send(result)
         })
 
-        app.patch('/users/:id', async (req, res) => {
-            const id = req.params.id
-            console.log(id);
-            const filter = { _id: new ObjectId(id) };
-            const updateDoc = {
-                $set: {
-                    role: 'User'
-                },
-            };
-            const result = await userCollection.updateOne(filter, updateDoc);
-            res.send(result)
-        })
+        // app.patch('/users/:id', async (req, res) => {
+        //     const id = req.params.id
+        //     console.log(id);
+        //     const filter = { _id: new ObjectId(id) };
+        //     const updateDoc = {
+        //         $set: {
+        //             role: 'User'
+        //         },
+        //     };
+        //     const result = await userCollection.updateOne(filter, updateDoc);
+        //     res.send(result)
+        // })
 
         // Contest Api
 
@@ -325,6 +331,20 @@ async function run() {
             const result = await paymentCollection.find().toArray()
             res.send(result)
         })
+
+        app.get('/payment/:email', async (req, res) => {
+            const email = req.params.email
+            const filter = { email: email }
+            const page = parseInt(req.query.page)
+            const size = parseInt(req.query.size)
+            const result = await paymentCollection.find(filter)
+                .skip(page * size)
+                .limit(size)
+                .toArray()
+            res.send(result)
+        })
+
+
 
         // Perticipants Api 
 
